@@ -3,8 +3,8 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <meta http-equiv="x-ua-compatible" content="ie=9">
-  <title>Amoy Folder</title>
-  <hta:application id="hta" applicationName="Amoy Folder" navigable="yes" singleInstance="no" scroll="no" version="20261015"/>
+  <title>Handy Folder</title>
+  <hta:application id="hta" applicationName="Handy Folder" navigable="yes" singleInstance="no" scroll="no" version="20261015"/>
 </head>
 
 <style>
@@ -74,7 +74,7 @@ img.pic { max-width:100%; }
   <span class="icons">
      <svg onclick="app.settings()"
           width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <title>Settings (AmoyFolder.ini)</title>
+          <title>Settings (HandyFolder.ini)</title>
           <line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line>
           <line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line>
           <line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line>
@@ -98,7 +98,7 @@ img.pic { max-width:100%; }
   </svg>
   <button onclick="app.go(app.root)" title="Back to root folder">Root</button>
   <button onclick="app.up()" title="Parent folder (Backspace)">Up</button>
-  <button onclick="app.refresh()" title="Rescan folder and reload AmoyFolder.ini">Refresh</button>
+  <button onclick="app.refresh()" title="Rescan folder and reload HandyFolder.ini">Refresh</button>
   <button onclick="app.toggleSort()" id="sort">Sort: name</button>
   <button class=add onclick="app.newFile()">+ file</button>
   <button class=add onclick="app.newFolder()">+ folder</button>
@@ -115,10 +115,10 @@ img.pic { max-width:100%; }
 
 <script language="javascript">
 //----------- configuration ---------------
-// Built-in defaults. To change them, put AmoyFolder.ini next to this file
+// Built-in defaults. To change them, put HandyFolder.ini next to this file
 // (click the Settings icon to create one from these defaults).
 var defaultIni = [
-'; AmoyFolder.ini - settings for AmoyFolder.hta. Click Refresh after editing.',
+'; HandyFolder.ini - settings for HandyFolder.hta. Click Refresh after editing.',
 '; Lines starting with ; are comments. "a, b = x" sets both a and b.',
 '',
 '[settings]',
@@ -127,7 +127,7 @@ var defaultIni = [
 'browser   =             ; empty = default browser, or e.g. chrome.exe',
 'root      =             ; empty = folder of this .hta (a folder given on the command line wins)',
 'width     = 1024, 75%   ; px and/or % of screen, the smaller one is used',
-'home      = AmoyFolder.md ; your home page (Markdown), next to this .hta',
+'home      = HandyFolder.md ; your home page (Markdown), next to this .hta',
 'start     = home        ; home | folder (show README of root at start)',
 'sort      = name        ; name | date',
 'listMax   = 500',
@@ -294,7 +294,7 @@ app.loadIni = function () {
   config.browser   = app.set('browser')
   config.listMax   = +app.set('listMax') || 500
   config.viewMaxKB = +app.set('viewMaxKB') || 512
-  app.homeFile = app.path(app.set('home') || 'AmoyFolder.md', app.dir0)
+  app.homeFile = app.path(app.set('home') || 'HandyFolder.md', app.dir0)
   try { config.hidden = new RegExp(app.set('hidden') || '^$', 'i') }
   catch (err) { config.hidden = /^$/; app.status('Bad "hidden" pattern in ini', true) }
 }
@@ -729,7 +729,7 @@ app.about = function () {
   alert(hta.applicationName + '\n\nVersion: ' + hta.version + '\nRoot: ' + app.root + '\nFolder: ' + app.cwd +
         '\nSettings: ' + app.iniFile + ($$.file.exists(app.iniFile) ? '' : ' (not created, using defaults)') +
         '\nEditor: ' + config.editor + '\nVS Code: ' + (config.code || '(not found)') +
-        '\n\nUsage: mshta.exe AmoyFolder.hta "C:\\some\\folder"' +
+        '\n\nUsage: mshta.exe HandyFolder.hta "C:\\some\\folder"' +
         '\nMode: IE' + document.documentMode + '\nuserAgent: ' + navigator.userAgent)
 }
 
@@ -744,7 +744,7 @@ app.width = function () {
   return Math.round(w)
 }
 
-// folder given on the command line: mshta.exe AmoyFolder.hta "C:\some\folder"
+// folder given on the command line: mshta.exe HandyFolder.hta "C:\some\folder"
 app.arg = function () {
   var m = /^\s*("[^"]*"|\S+)\s*(.*)$/.exec(String(hta.commandLine || ''))
   var p = m ? m[2].replace(/"/g, '').trim() : ''
@@ -754,7 +754,7 @@ app.arg = function () {
 window.onload = function () {
   // folder of this .hta (fallback: current directory)
   app.self = decodeURIComponent(location.pathname).replace(/^[\/\\]+/, '').replace(/\//g, '\\')
-  if (!/^[a-z]:\\/i.test(app.self)) app.self = $$.CurrentDirectory + '\\AmoyFolder.hta'
+  if (!/^[a-z]:\\/i.test(app.self)) app.self = $$.CurrentDirectory + '\\HandyFolder.hta'
   app.root = app.cwd = app.dir0 = app.parent(app.self)
   app.iniFile = app.self.replace(/\.hta$/i, '.ini')
   app.loadIni(); app.detect()
@@ -763,7 +763,7 @@ window.onload = function () {
 
   var root = app.path(app.arg() || app.set('root') || app.root, app.root)
   if ($$.file.dirExists(root)) app.root = root
-  document.title = 'Amoy Folder - ' + app.root
+  document.title = 'Handy Folder - ' + app.root
 
   // set window position: right side of screen
   var w = app.width()

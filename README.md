@@ -1,4 +1,4 @@
-# AmoyFolder
+# HandyFolder
 
 **English** | [繁體中文](README.zh-TW.md)
 
@@ -16,9 +16,9 @@ of shortcuts.
 - **Actions** (buttons in the right pane): view, edit, open, ► run, VS Code, reveal in Explorer, copy path.
 - **Folder README**: when you enter a folder, its `README.md` is shown, plus tool buttons
   (CMD, PowerShell, Explorer, Git ...).
-- **Home page**: your own Markdown page (`AmoyFolder.md`) with shortcut tiles.
+- **Home page**: your own Markdown page (`HandyFolder.md`) with shortcut tiles.
   Add one with **+ shortcut**.
-- **Configurable** with a plain `AmoyFolder.ini` (optional; built-in defaults are used when missing).
+- **Configurable** with a plain `HandyFolder.ini` (optional; built-in defaults are used when missing).
 - Filter, sort by name or date, new file (date prefix `YYYYMMDD-`), new folder,
   breadcrumb path, Backspace = parent folder.
 
@@ -30,29 +30,29 @@ of shortcuts.
 
 ## Quick start
 
-1. Copy `AmoyFolder.hta` into the folder you want to manage.
+1. Copy `HandyFolder.hta` into the folder you want to manage.
 2. Double-click it.
 
 Or open any folder from the command line:
 
 ```bat
-mshta.exe C:\path\to\AmoyFolder.hta "D:\some\folder"
+mshta.exe C:\path\to\HandyFolder.hta "D:\some\folder"
 ```
 
-Tip: put a shortcut to this command in `shell:sendto` to get "Send to > AmoyFolder".
+Tip: put a shortcut to this command in `shell:sendto` to get "Send to > HandyFolder".
 
 ## Using it
 
 | Where | What |
 |---|---|
 | Top bar | Home icon, Root, Up, Refresh, Sort, + file, + folder, Filter |
-| Top right | Settings (creates/edits `AmoyFolder.ini`), Edit this HTA, About |
+| Top right | Settings (creates/edits `HandyFolder.ini`), Edit this HTA, About |
 | Left pane | Click a folder to enter it; click a file to show it |
 | Right pane | The file (or folder README / home page) with its action buttons |
 
 ## Home page and shortcuts
 
-Click the **home icon**. The page is `AmoyFolder.md` next to the `.hta`
+Click the **home icon**. The page is `HandyFolder.md` next to the `.hta`
 (created the first time you press **edit** or **+ shortcut**).
 Every list item that is a link shows as a tile:
 
@@ -66,7 +66,7 @@ Every list item that is a link shows as a tile:
 - [Notepad](run:notepad.exe)            run: links run a command
 ```
 
-## Settings (`AmoyFolder.ini`)
+## Settings (`HandyFolder.ini`)
 
 Click the settings icon to create the file from the defaults, edit it, then press **Refresh**.
 
@@ -76,7 +76,7 @@ editor    =              ; empty = auto (Notepad++ > VS Code > notepad.exe)
 browser   =              ; empty = default browser
 root      =              ; empty = folder of the .hta
 width     = 1024, 75%    ; px and/or % of screen, the smaller one is used
-home      = AmoyFolder.md
+home      = HandyFolder.md
 start     = home         ; home | folder
 hidden    = ^(\.git|node_modules|__pycache__)$
 
@@ -99,14 +99,14 @@ Git status = cmd.exe /k git status
 ```
 
 Placeholders: `{file}` full path, `{name}` file name, `{dir}` folder, `{root}` root folder.
-See the built-in defaults at the top of the `<script>` in `AmoyFolder.hta` for the full list.
+See the built-in defaults at the top of the `<script>` in `HandyFolder.hta` for the full list.
 
 ## Security notes
 
 - An HTA runs with full user rights (like any program you start). Only use a copy you trust.
 - Clicking never runs a file; **► run** and `run:` links do.
 - HTML files are shown in an iframe with `application="no"`, so they get no HTA rights.
-- `AmoyFolder.ini` and `AmoyFolder.md` are personal and are listed in `.gitignore`.
+- `HandyFolder.ini` and `HandyFolder.md` are personal and are listed in `.gitignore`.
 
 ## Limits
 
