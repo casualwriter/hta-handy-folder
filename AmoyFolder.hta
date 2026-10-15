@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=9">
+  <title>Amoy Folder</title>
+  <hta:application id="hta" applicationName="Amoy Folder" navigable="yes" singleInstance="no" scroll="no" version="20261015"/>
+</head>
+
+<style>
+html, body { height:100%; margin:0; overflow:hidden; }
+body, button, input { font-family:Segoe UI,Verdana,Arial; font-size:13px; }
+button  { margin:0 2px; padding:1px 6px; cursor:pointer; }
+#top    { position:absolute; top:0; left:0; right:0; height:56px; padding:6px 8px; background:#f4f4f4; border-bottom:1px solid #ccc; }
+#crumbs { margin-top:8px; white-space:nowrap; overflow:hidden; color:#888; }
+.crumb  { color:#036; cursor:pointer; }
+.crumb:hover, span.name:hover, span.dir:hover { text-decoration:underline; }
+#filter { width:140px; padding:1px 4px; }
+.icons  { float:right; }
+.icons svg { cursor:pointer; margin-left:8px; }
+#left   { position:absolute; top:69px; bottom:25px; left:0; width:40%; overflow-y:auto; border-right:1px solid #ccc; }
+#right  { position:absolute; top:69px; bottom:25px; left:40%; right:0; }
+#list   { margin:0; padding:0; }
+#list li { list-style:none; padding:3px 8px; border-bottom:1px solid #f0f0f0; }
+#list li.sel { background:#def; }
+.homeicon { vertical-align:middle; cursor:pointer; margin-right:4px; }
+table.info td { padding:3px 16px 3px 0; vertical-align:top; }
+table.info td:first-child { color:#888; }
+.homepage ul { padding:0; }
+.homepage li { list-style:none; display:inline-block; margin:3px; }
+.homepage li a { display:inline-block; padding:6px 14px; border:1px solid #ccd; background:#f6f8fc; border-radius:4px; text-decoration:none; }
+.homepage li a:hover { background:#e6eefc; }
+.hadd     { color:#080; font-weight:600 }
+.hedit    { color:#a06 }
+span.name, span.dir { display:block; cursor:pointer; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+span.dir { color:green; font-weight:600; }
+.meta   { color:#888; font-size:11px; margin-left:8px; font-weight:normal; }
+.empty  { color:#aaa; font-style:italic; }
+#vhead  { position:absolute; top:0; left:0; right:0; height:24px; padding:4px 10px; background:#fafafa; border-bottom:1px solid #ddd; white-space:nowrap; overflow:hidden; }
+#vhead button { float:right; }
+#vbody  { position:absolute; top:33px; bottom:0; left:0; right:0; overflow:auto; padding:8px 16px; }
+#vbody.frame { padding:0; overflow:hidden; }
+#vbody iframe { width:100%; height:100%; border:0; }
+pre.text { margin:0; white-space:pre-wrap; word-wrap:break-word; font:12px Consolas,monospace; }
+img.pic { max-width:100%; }
+.tools  { margin:4px 0 12px 0; padding-bottom:8px; border-bottom:1px solid #eee; }
+.tools button { margin:2px; }
+.status { position:absolute; left:0; right:0; bottom:0; height:16px; padding:4px 10px; background:#f4f4f4; border-top:1px solid #ccc; font-size:12px; color:#555; white-space:nowrap; overflow:hidden; }
+.folder, .reveal { color:green }
+.open     { color:blue }
+.edit     { color:#a06 }
+.code, .cmd, .copy, .tool { color:navy }
+.run      { color:#c60 }
+.view     { color:#066 }
+.add      { color:#080; font-weight:600 }
+.md     { line-height:1.5; max-width:900px; }
+.md h1, .md h2 { border-bottom:1px solid #eee; padding-bottom:3px; }
+.md h1  { font-size:22px; }
+.md h2  { font-size:18px; }
+.md h3  { font-size:15px; }
+.md code { background:#f3f3f3; padding:0 3px; font-family:Consolas,monospace; }
+.md pre { background:#f6f6f6; border:1px solid #e4e4e4; padding:8px; overflow:auto; font:12px Consolas,monospace; }
+.md blockquote { margin:8px 0; padding:2px 12px; border-left:4px solid #ddd; color:#555; }
+.md table { border-collapse:collapse; margin:8px 0; }
+.md th, .md td { border:1px solid #ddd; padding:3px 8px; }
+.md th  { background:#f4f4f4; }
+.md a   { color:#06c; cursor:pointer; }
+.md img { max-width:100%; }
+</style>
+
+<body>
+
+<div id="top">
+  <span class="icons">
+     <svg onclick="app.settings()"
+          width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <title>Settings (AmoyFolder.ini)</title>
+          <line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line>
+          <line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line>
+          <line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line>
+     </svg>
+     <svg onclick="app.act('edit', app.self)"
+          width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="square" stroke-linejoin="bevel">
+          <title>Edit this HTA</title>
+          <path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"></path>
+          <polygon points="18 2 22 6 12 16 8 16 8 12 18 2"></polygon>
+     </svg>
+     <svg onclick="app.about()"
+          width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <title>About</title>
+          <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>
+     </svg>
+  </span>
+  <svg class="homeicon" onclick="app.homepage()"
+       width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+       <title>Home page and shortcuts</title>
+       <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline>
+  </svg>
+  <button onclick="app.go(app.root)" title="Back to root folder">Root</button>
+  <button onclick="app.up()" title="Parent folder (Backspace)">Up</button>
+  <button onclick="app.refresh()" title="Rescan folder and reload AmoyFolder.ini">Refresh</button>
+  <button onclick="app.toggleSort()" id="sort">Sort: name</button>
+  <button class=add onclick="app.newFile()">+ file</button>
+  <button class=add onclick="app.newFolder()">+ folder</button>
+  &nbsp; Filter: <input id="filter" onkeyup="app.filter()" title="Filter names in this folder">
+  <div id="crumbs"></div>
+</div>
+
+<div id="left"><ul id="list"></ul></div>
+<div id="right"><div id="vhead"></div><div id="vbody"></div></div>
+
+<div class="status" id="status">Ready</div>
+
+</body>
+
+<script language="javascript">
+//----------- configuration ---------------
+// Built-in defaults. To change them, put AmoyFolder.ini next to this file
+// (click the Settings icon to create one from these defaults).
+var defaultIni = [
+'; AmoyFolder.ini - settings for AmoyFolder.hta. Click Refresh after editing.',
+'; Lines starting with ; are comments. "a, b = x" sets both a and b.',
+'',
+'[settings]',
+'editor    =             ; empty = auto (Notepad++ > VS Code > notepad.exe)',
+'code      =             ; empty = auto-detect VS Code',
+'browser   =             ; empty = default browser, or e.g. chrome.exe',
+'root      =             ; empty = folder of this .hta (a folder given on the command line wins)',
+'width     = 1024, 75%   ; px and/or % of screen, the smaller one is used',
+'home      = AmoyFolder.md ; your home page (Markdown), next to this .hta',
+'start     = home        ; home | folder (show README of root at start)',
+'sort      = name        ; name | date',
+'listMax   = 500',
+'viewMaxKB = 512         ; bigger text files are not shown inside',
+'readme    = README.md, readme.txt, index.md',
+'hidden    = ^(\\.git|\\.svn|node_modules|__pycache__|\\.venv|venv|desktop\\.ini|thumbs\\.db)$',
+'',
+'[actions]',
+'; extension = buttons. Clicking a name only shows it, it never runs or opens it.',
+'; view = show content here, edit = editor, open = Windows default app,',
+'; run = shown by itself when [run] has a command, code = VS Code, reveal = show in Explorer, copy = copy path',
+'md, markdown = view, edit, open, copy',
+'txt, log, ini, cfg, conf, json, csv, tsv, xml, yml, yaml, toml, css, js, ts, sql, c, h, cpp, cs, java, go, rs = view, edit, copy',
+'py, ps1, bat, cmd, vbs, sh = view, edit, copy',
+'html, htm = view, open, edit, copy',
+'png, jpg, jpeg, gif, bmp, ico, svg = view, open, copy',
+'hta = edit, copy',
+'exe, msi, lnk, url = reveal, copy',
+'* = open, reveal, copy',
+'',
+'[run]',
+'; extension = command, run in a console in the file folder. start = Windows default, no console.',
+'; {file} full path, {name} file name, {dir} folder, {root} root folder',
+'hta, exe, msi, lnk, url = start',
+'py  = python "{file}"',
+'ps1 = powershell -NoProfile -ExecutionPolicy Bypass -File "{file}"',
+'bat, cmd = "{file}"',
+'vbs = cscript //nologo "{file}"',
+'sh  = bash "{file}"',
+'',
+'[tools]',
+'; label = target. "/path" = folder or file under root, "http..." = browser,',
+'; anything else = command run in the current folder ({dir} {root} allowed).',
+'CMD        = cmd.exe',
+'PowerShell = powershell.exe',
+'Explorer   = explorer.exe "{dir}"',
+'Git status = cmd.exe /k git status',
+'Git GUI    = git gui',
+''
+].join('\r\n')
+
+var config = { editor:'', code:'', browser:'', hidden:/^$/, listMax:500, viewMaxKB:512 }
+
+var $$ = function(x) { return window.document.getElementById(x); };
+
+$$.shell = { name:'Shell Service' };
+$$.obj   = { name:'ActiveX Objects' };
+$$.file  = { name:'File Service' };
+
+$$.obj.shell   = new ActiveXObject("WScript.Shell");
+$$.obj.shellapp= new ActiveXObject("Shell.Application");
+$$.obj.file    = new ActiveXObject("Scripting.FileSystemObject");
+
+$$.CurrentDirectory = '' + $$.obj.shell.CurrentDirectory
+
+//----------- shell functions ---------------
+// intWindowStyle := 0:hide, 1:normal, 2:Min, 3:max, 4:restore, 5:active&Restore
+$$.shell.run = function ( strCommand, intWindowStyle, bWaitOnReturn ) {
+   $$.obj.shell.run( strCommand, (intWindowStyle===undefined ? 1 : intWindowStyle), bWaitOnReturn||false )
+}
+
+$$.shell.runat = function ( strFolder, strCommand, intWindowStyle, bWaitOnReturn  ) {
+   $$.obj.shell.CurrentDirectory = strFolder
+   try { $$.shell.run( strCommand, intWindowStyle, bWaitOnReturn ) }
+   finally { $$.obj.shell.CurrentDirectory = $$.CurrentDirectory }
+}
+
+$$.shell.execute = function ( strFile, strParam, strDir, strAction, intWindowStyle) {
+   $$.obj.shellapp.ShellExecute ( strFile, strParam||'', strDir||'', strAction||'open', intWindowStyle||1 )
+}
+
+//----------- file functions ---------------
+$$.file.exists    = function (path) { return $$.obj.file.FileExists(path) }
+$$.file.dirExists = function (path) { return $$.obj.file.FolderExists(path) }
+
+$$.file.read = function (path) {      // read UTF-8 text
+  var s = new ActiveXObject('ADODB.Stream')
+  s.Type = 2; s.Charset = 'utf-8'; s.Open(); s.LoadFromFile(path)
+  var text = s.ReadText(); s.Close()
+  return text.replace(/^\uFEFF/, '')
+}
+
+$$.file.write = function (path, text) {   // write UTF-8 text without BOM
+  var s = new ActiveXObject('ADODB.Stream')
+  s.Type = 2; s.Charset = 'utf-8'; s.Open(); s.WriteText(text)
+  s.Position = 3                          // skip the BOM
+  var b = new ActiveXObject('ADODB.Stream')
+  b.Type = 1; b.Open(); s.CopyTo(b); b.SaveToFile(path, 2)
+  b.Close(); s.Close()
+}
+
+//----------- application manager ---------------
+var app = { name:'Application manager' }
+
+app.q   = function (s) { return '"' + s + '"' }
+app.esc = function (s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
+app.ext = function (p) { var m = /\.([^.\\]+)$/.exec(p); return m ? m[1].toLowerCase() : '' }
+app.base = function (p) { return p.substr(p.lastIndexOf('\\')+1) }
+app.parent = function (p) { return '' + $$.obj.file.GetParentFolderName(p) }
+
+// '/x' = from root, 'x' = from base (or current folder), 'C:\x' = as is; '..' resolved
+app.path = function (p, base) {
+  p = String(p).replace(/\//g, '\\')
+  if (p.charAt(0)==='\\' && p.charAt(1)!=='\\') p = app.root + p
+  else if (!/^([a-z]:|\\\\)/i.test(p)) p = (base || app.cwd) + '\\' + p
+  var unc = /^\\\\/.test(p), parts = p.split(/\\+/), out = []
+  for (var i=0; i<parts.length; i++) {
+    if (!parts[i] || parts[i]==='.') continue
+    if (parts[i]==='..') { if (out.length>1) out.pop() } else out.push(parts[i])
+  }
+  p = (unc ? '\\\\' : '') + out.join('\\')
+  return /^[a-z]:$/i.test(p) ? p + '\\' : p
+}
+
+app.status = function (msg, isError) {
+  var el = $$('status'); if (!el) return
+  el.style.color = isError ? '#c00' : '#555'
+  el.innerText = msg
+}
+
+app.open = function (url) {
+  if (config.browser) $$.shell.run( config.browser + ' ' + app.q(url) )
+  else $$.shell.execute( url )
+}
+
+// replace {file} {name} {dir} {root} in a command
+app.fill = function (s, file, dir) {
+  var v = { file:file, name:app.base(file), dir:dir, root:app.root }
+  return String(s).replace(/\{(file|name|dir|root)\}/g, function (m, k) { return v[k] })
+}
+
+//----------- ini settings ---------------
+app.parseIni = function (text, ini, user) {
+  var lines = text.split(/\r?\n/), sec = 'settings', seen = {}, m
+  for (var i=0; i<lines.length; i++) {
+    var s = lines[i].trim()
+    if (!s || /^[;#]/.test(s)) continue
+    if (m = /^\[(.+)\]$/.exec(s)) {
+      sec = m[1].trim().toLowerCase()
+      if (!ini[sec] || (user && sec==='tools' && !seen[sec])) ini[sec] = {}   // user [tools] replaces defaults
+      seen[sec] = true
+      continue
+    }
+    if (!(m = /^([^=]+)=(.*)$/.exec(s))) continue
+    var val = m[2].replace(/(^|\s);.*$/, '').trim()
+    ini[sec] = ini[sec] || {}
+    if (sec==='tools') { ini[sec][m[1].trim()] = val; continue }
+    var keys = m[1].split(',')
+    for (var k=0; k<keys.length; k++) ini[sec][keys[k].trim().toLowerCase()] = val
+  }
+  return ini
+}
+
+app.set = function (key) { return app.ini.settings[key.toLowerCase()] || '' }
+
+app.loadIni = function () {
+  app.ini = app.parseIni(defaultIni, {}, false)
+  if ($$.file.exists(app.iniFile)) {
+    try { app.parseIni($$.file.read(app.iniFile), app.ini, true) }
+    catch (err) { app.status('Cannot read ' + app.iniFile + ': ' + err.message, true) }
+  }
+  config.editor    = app.set('editor')
+  config.code      = app.set('code')
+  config.browser   = app.set('browser')
+  config.listMax   = +app.set('listMax') || 500
+  config.viewMaxKB = +app.set('viewMaxKB') || 512
+  app.homeFile = app.path(app.set('home') || 'AmoyFolder.md', app.dir0)
+  try { config.hidden = new RegExp(app.set('hidden') || '^$', 'i') }
+  catch (err) { config.hidden = /^$/; app.status('Bad "hidden" pattern in ini', true) }
+}
+
+app.settings = function () {
+  if (!$$.file.exists(app.iniFile)) { $$.file.write(app.iniFile, defaultIni); app.status('Created ' + app.iniFile) }
+  app.act('edit', app.iniFile)
+}
+
+//----------- detect tools ---------------
+app.firstExisting = function (list) {
+  for (var i=0; i<list.length; i++) {
+    var p = $$.obj.shell.ExpandEnvironmentStrings(list[i])
+    if ($$.file.exists(p)) return p
+  }
+  return ''
+}
+
+app.detect = function () {
+  config.code = config.code || app.firstExisting([
+     '%LOCALAPPDATA%\\Programs\\Microsoft VS Code\\Code.exe',
+     '%ProgramFiles%\\Microsoft VS Code\\Code.exe' ])
+  config.editor = config.editor || app.firstExisting([
+     '%ProgramFiles%\\Notepad++\\notepad++.exe',
+     '%ProgramFiles(x86)%\\Notepad++\\notepad++.exe' ]) || config.code || 'notepad.exe'
+}
+
+// buttons for a file, from [actions]; 'run' is added whenever [run] has a command
+app.actions = function (path) {
+  var ext = app.ext(path), a = (app.ini.actions[ext] || app.ini.actions['*'] || 'open').split(/\s*,\s*/), out = []
+  for (var i=0; i<a.length; i++) {
+    if (!a[i] || a[i]==='run' || (a[i]==='code' && !config.code)) continue
+    out.push(a[i])
+  }
+  if (app.ini.run[ext]) out.splice(out[0]==='view' ? 1 : 0, 0, 'run')
+  return out.length ? out : ['open']
+}
+
+//----------- folder list ---------------
+app.pad = function (n) { return (n<10 ? '0' : '') + n }
+app.fmtDate = function (d) { return d.getFullYear()+'-'+app.pad(d.getMonth()+1)+'-'+app.pad(d.getDate())+' '+app.pad(d.getHours())+':'+app.pad(d.getMinutes()) }
+app.ymd     = function () { var d=new Date(); return d.getFullYear()+app.pad(d.getMonth()+1)+app.pad(d.getDate()) }
+app.fmtSize = function (n) { return n<1024 ? n+' B' : n<1048576 ? Math.round(n/1024)+' KB' : (n/1048576).toFixed(1)+' MB' }
+
+app.button = function (cls, title, text) {
+  var b = document.createElement('button')
+  b.className = cls; b.title = title; b.innerText = text
+  return b
+}
+
+// one list row; buttons live in the right panel only
+app.row = function (ul, cls, path, text, meta) {
+  var li = document.createElement('li'), s = document.createElement('span')
+  s.className = cls; s.title = path
+  s.appendChild(document.createTextNode(text))
+  if (meta) { var m = document.createElement('span'); m.className = 'meta'; m.innerText = meta; s.appendChild(m) }
+  li.appendChild(s)
+  ul.appendChild(li)
+  return li
+}
+
+app.list = function () {
+  var ul = $$('list'), folder = $$.obj.file.GetFolder(app.cwd), files = [], dirs = [], e, i
+  ul.innerHTML = ''
+  try {
+    for (e = new Enumerator(folder.SubFolders); !e.atEnd(); e.moveNext()) {
+      var d = e.item()
+      if (!config.hidden.test(d.Name)) dirs.push({ name:''+d.Name, path:''+d.Path, date:new Date(d.DateLastModified) })
+    }
+    for (e = new Enumerator(folder.Files); !e.atEnd(); e.moveNext()) {
+      var f = e.item()
+      if (!config.hidden.test(f.Name)) files.push({ name:''+f.Name, path:''+f.Path, date:new Date(f.DateLastModified), size:f.Size })
+    }
+  } catch (err) { app.status('Cannot read folder: ' + err.message, true) }
+
+  var by = app.sortBy==='date' ? function (a,b) { return b.date - a.date }
+         : function (a,b) { var x=a.name.toLowerCase(), y=b.name.toLowerCase(); return x<y ? -1 : x>y ? 1 : 0 }
+  dirs.sort(by); files.sort(by)
+
+  if (folder.ParentFolder) app.row(ul, 'dir', app.parent(app.cwd), '..', '')
+  for (i=0; i<dirs.length; i++) app.row(ul, 'dir', dirs[i].path, dirs[i].name + '\\', app.fmtDate(dirs[i].date))
+  for (i=0; i<files.length && i<config.listMax; i++) {
+    app.row(ul, 'name', files[i].path, files[i].name, app.fmtDate(files[i].date) + '  ' + app.fmtSize(files[i].size))
+  }
+  if (files.length > config.listMax) app.row(ul, 'empty', '', '... ' + (files.length-config.listMax) + ' more, open the folder to see all', '')
+  if (!files.length && !dirs.length) app.row(ul, 'empty', '', '(empty folder)', '')
+  app.status(dirs.length + ' folders, ' + files.length + ' files  -  ' + app.cwd)
+}
+
+app.crumbs = function () {
+  var parts = app.cwd.replace(/\\$/, '').split('\\'), html = [], p = ''
+  for (var i=0; i<parts.length; i++) {
+    p += (i ? '\\' : '') + parts[i]
+    html.push('<span class=crumb title="' + app.esc(i ? p : p + '\\') + '">' + app.esc(parts[i]) + '</span>')
+  }
+  $$('crumbs').innerHTML = html.join(' \\ ')
+}
+
+app.select = function (path) {
+  var lis = $$('list').children
+  for (var i=0; i<lis.length; i++) {
+    var s = lis[i].getElementsByTagName('span')[0]
+    lis[i].className = (s && s.title===path) ? 'sel' : ''
+  }
+}
+
+app.filter = function () {
+  var q = $$('filter').value.toLowerCase(), lis = $$('list').children
+  for (var i=0; i<lis.length; i++) {
+    var s = lis[i].getElementsByTagName('span')[0], t = (s && s.firstChild) ? String(s.firstChild.nodeValue).toLowerCase() : ''
+    lis[i].style.display = (!q || t==='..' || t.indexOf(q)>=0) ? '' : 'none'
+  }
+}
+
+app.go = function (dir) {
+  dir = app.path(dir)
+  if (!$$.file.dirExists(dir)) { app.status('Folder not found: ' + dir, true); return }
+  app.cwd = dir
+  $$('filter').value = ''
+  app.list(); app.crumbs(); app.readme()
+  $$('left').scrollTop = 0
+}
+
+app.up = function () { var p = app.parent(app.cwd); if (p) app.go(p) }
+
+app.toggleSort = function () {
+  app.sortBy = app.sortBy==='date' ? 'name' : 'date'
+  $$('sort').innerText = 'Sort: ' + app.sortBy
+  app.list(); app.select(app.viewing); app.filter()
+}
+
+app.refresh = function () {
+  try {
+    app.loadIni(); app.detect()
+    if (!$$.file.dirExists(app.cwd)) app.cwd = app.root
+    app.list(); app.crumbs()
+    if (app.mode==='home') app.homepage()
+    else if (app.viewing && $$.file.exists(app.viewing)) app.view(app.viewing); else app.readme()
+    app.filter()
+  } catch (err) { app.status('Refresh error: ' + err.message, true) }
+}
+
+//----------- viewer (right pane) ---------------
+app.labels = { run:'► run', hedit:'edit', hadd:'+ shortcut' }
+
+app.panel = function (head, acts, path, body, frame) {
+  var h = $$('vhead'), b = $$('vbody'), s = document.createElement('span')
+  h.innerHTML = ''
+  for (var i=acts.length-1; i>=0; i--) h.appendChild(app.button(acts[i], path, app.labels[acts[i]] || acts[i]))
+  s.innerHTML = head; h.appendChild(s)
+  b.className = frame ? 'frame' : ''
+  b.innerHTML = body
+  b.scrollTop = 0
+}
+
+// folder home: tools + README
+app.readme = function () {
+  var dir = app.cwd, html = '<div class=tools>', names = app.set('readme').split(/\s*,\s*/), k
+  app.viewing = ''; app.viewDir = dir; app.mode = 'folder'
+  for (k in app.ini.tools) if (app.ini.tools[k]) html += '<button class=tool title="' + app.esc(app.ini.tools[k]) + '">' + app.esc(k) + '</button>'
+  html += '</div>'
+  for (k=0; k<names.length; k++) {
+    var p = app.path(names[k], dir)
+    if (!names[k] || !$$.file.exists(p)) continue
+    var text = $$.file.read(p)
+    html += /\.(md|markdown)$/i.test(p) ? '<div class=md>' + md.render(text, dir) + '</div>' : '<pre class=text>' + app.esc(text) + '</pre>'
+    break
+  }
+  if (k>=names.length) html += '<p class=empty>No README.md in this folder. Add one to describe the folder.</p>'
+  var acts = config.code ? ['folder','cmd','code','copy'] : ['folder','cmd','copy']
+  app.panel('<b>' + app.esc(app.base(dir.replace(/\\$/, '')) || dir) + '</b><span class=meta>' + app.esc(dir) + '</span>', acts, dir, html)
+  app.select('')
+}
+
+app.view = function (full) {
+  var f = $$.obj.file.GetFile(full), ext = app.ext(full), dir = app.parent(full), body, frame = false
+  var acts = app.actions(full), others = [], canView = false
+  for (var i=0; i<acts.length; i++) { if (acts[i]==='view') canView = true; else others.push(acts[i]) }
+  app.viewing = full; app.viewDir = dir; app.mode = 'file'
+  if (!canView) {
+    body = '<table class=info><tr><td>Path</td><td>' + app.esc(full) + '</td></tr><tr><td>Type</td><td>' + app.esc(f.Type) +
+           '</td></tr><tr><td>Size</td><td>' + app.fmtSize(f.Size) + '</td></tr><tr><td>Modified</td><td>' + app.fmtDate(new Date(f.DateLastModified)) +
+           '</td></tr><tr><td>Created</td><td>' + app.fmtDate(new Date(f.DateCreated)) + '</td></tr></table>' +
+           '<p class=empty>Use the buttons above' + (app.ini.run[ext] ?', or ► run to start it.' : '.') + '</p>'
+  } else if (/^(png|jpe?g|gif|bmp|ico|svg)$/.test(ext)) {
+    body = '<img class=pic src="' + app.esc(full) + '">'
+  } else if (/^html?$/.test(ext)) {
+    body = '<iframe application="no" src="' + app.esc(full) + '"></iframe>'; frame = true
+  } else if (f.Size > config.viewMaxKB*1024) {
+    body = '<p class=empty>File too big to show here (' + app.fmtSize(f.Size) + '). Use open or edit.</p>'
+  } else {
+    var text = $$.file.read(full)
+    if (/\u0000/.test(text.substr(0, 4000))) body = '<p class=empty>Binary file. Use open.</p>'
+    else if (/^(md|markdown)$/.test(ext)) body = '<div class=md>' + md.render(text, dir) + '</div>'
+    else body = '<pre class=text>' + app.esc(text) + '</pre>'
+  }
+  app.panel('<b>' + app.esc(app.base(full)) + '</b><span class=meta>' + app.fmtDate(new Date(f.DateLastModified)) + '  ' + app.fmtSize(f.Size) + '</span>', others, full, body, frame)
+  app.select(full)
+  app.status('View: ' + full)
+}
+
+// link clicked inside a markdown view
+app.link = function (href) {
+  if (/^#/.test(href)) return
+  if (/^run:/i.test(href)) return app.tool(href.substr(4))
+  if (/^[a-z][a-z0-9+.\-]+:/i.test(href)) { app.open(href); app.status('Open: ' + href); return }
+  try { href = decodeURIComponent(href) } catch (err) {}
+  var p = app.path(href.replace(/[#?].*$/, ''), app.viewDir)
+  if ($$.file.dirExists(p)) return app.go(p)
+  if (!$$.file.exists(p)) return app.status('Not found: ' + p, true)
+  if (app.parent(p).toLowerCase() !== app.cwd.toLowerCase()) app.go(app.parent(p))
+  app.view(p)
+}
+
+//----------- home page (Markdown file with shortcuts) ---------------
+app.homeText = [
+'# Home', '',
+'Your own start page. Click **edit** to change it, or **+ shortcut** to add a link.', '',
+'Link targets: `/folder/or/file` (under root), `C:\\any\\path`, `https://...`, or `run:command`.',
+'Clicking a file link only shows it; `run:` links run the command.', '',
+'## Shortcuts', '',
+'- [Root folder](/)',
+'- [Command prompt](run:cmd.exe)', ''
+].join('\r\n')
+
+app.homepage = function () {
+  if (app.mode!=='home') app.lastTarget = app.viewing || app.cwd
+  app.mode = 'home'; app.viewing = ''; app.viewDir = app.parent(app.homeFile)
+  var has = $$.file.exists(app.homeFile), text = has ? $$.file.read(app.homeFile) : app.homeText
+  app.panel('<b>Home</b><span class=meta>' + app.esc(has ? app.homeFile : '(default page, saved on first edit)') + '</span>',
+            ['hedit', 'hadd'], app.homeFile, '<div class="md homepage">' + md.render(text, app.viewDir) + '</div>')
+  app.select('')
+}
+
+app.ensureHome = function () {
+  if (!$$.file.exists(app.homeFile)) $$.file.write(app.homeFile, app.homeText)
+}
+
+app.addShortcut = function () {
+  var full = app.lastTarget || app.cwd, r = app.root.replace(/\\$/, ''), t = full
+  if (full.toLowerCase()===r.toLowerCase() || full.toLowerCase().indexOf(r.toLowerCase() + '\\')===0)
+    t = '/' + full.substr(r.length+1).replace(/\\/g, '/')               // inside root: '/sub/file'
+  var name = prompt('Shortcut name', app.base(full.replace(/\\$/, '')) || 'Root')
+  if (!name) return
+  var target = prompt('Target:  /path under root,  C:\\path,  https://...,  or  run:command', t)
+  if (!target) return
+  app.ensureHome()
+  var text = $$.file.read(app.homeFile).replace(/\s+$/, '')
+  $$.file.write(app.homeFile, text + '\r\n- [' + name.replace(/[\[\]]/g, '') + '](' + target.trim() + ')\r\n')
+  app.homepage()
+  app.status('Shortcut added: ' + name + ' -> ' + target)
+}
+
+//----------- markdown (small subset) ---------------
+var md = { name:'Markdown renderer' }
+
+md.item  = /^(\s*)([-*+]|\d+[.)])\s+(.*)$/
+md.block = /^\s*(```|#{1,6}\s|>|\|)|^\s*([-*+]|\d+[.)])\s+/
+
+md.src = function (src, base) { return /^[a-z][a-z0-9+.\-]+:/i.test(src) ? src : app.path(src, base) }
+
+md.inline = function (s, base) {
+  var codes = []
+  s = s.replace(/`([^`]+)`/g, function (m, c) { codes.push(c); return '\u0001' + (codes.length-1) + '\u0001' })
+  s = app.esc(s)
+  // link target may have spaces; an optional "title" is dropped (text is already escaped here)
+  var href = function (h) { return h.replace(/\s+&quot;.*$/, '').trim() }
+  s = s.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, function (m, alt, src) { return '<img alt="' + alt + '" src="' + app.esc(md.src(href(src).replace(/&amp;/g, '&'), base)) + '">' })
+  s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, function (m, text, h) { return '<a href="#" data-href="' + href(h) + '">' + text + '</a>' })
+  s = s.replace(/(^|[\s(])(https?:\/\/[^\s<)"]*[^\s<)".,;:!?])/g, '$1<a href="#" data-href="$2">$2</a>')
+  s = s.replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/__([^_]+)__/g, '<b>$1</b>')
+  s = s.replace(/(^|[^*\w])\*([^*\s][^*]*)\*/g, '$1<i>$2</i>')
+  s = s.replace(/~~([^~]+)~~/g, '<s>$1</s>')
+  return s.replace(/\u0001(\d+)\u0001/g, function (m, i) { return '<code>' + app.esc(codes[+i]) + '</code>' })
+}
+
+md.render = function (text, base) {
+  var lines = text.replace(/\t/g, '    ').split(/\r?\n/), out = [], i = 0, m, k
+  var cells = function (s) { return s.replace(/^\s*\|/, '').replace(/\|\s*$/, '').split('|') }
+  while (i < lines.length) {
+    var line = lines[i]
+    if (/^\s*```/.test(line)) {                                   // code fence
+      var code = []; i++
+      while (i < lines.length && !/^\s*```/.test(lines[i])) code.push(lines[i++])
+      i++; out.push('<pre>' + app.esc(code.join('\n')) + '</pre>')
+    } else if (m = /^(#{1,6})\s+(.*?)\s*#*$/.exec(line)) {          // heading
+      out.push('<h' + m[1].length + '>' + md.inline(m[2], base) + '</h' + m[1].length + '>'); i++
+    } else if (/^\s*([-*_])(\s*\1){2,}\s*$/.test(line)) {           // rule
+      out.push('<hr>'); i++
+    } else if (/^\s*>/.test(line)) {                                // quote
+      var q = []
+      while (i < lines.length && /^\s*>/.test(lines[i])) q.push(lines[i++].replace(/^\s*>\s?/, ''))
+      out.push('<blockquote>' + md.render(q.join('\n'), base) + '</blockquote>')
+    } else if (/^\s*\|/.test(line) && /^\s*\|?\s*:?-+:?\s*(\|\s*:?-+:?\s*)*\|?\s*$/.test(lines[i+1] || '')) {   // table
+      var h = cells(line), t = '<table><tr>'
+      for (k=0; k<h.length; k++) t += '<th>' + md.inline(h[k].trim(), base) + '</th>'
+      t += '</tr>'; i += 2
+      while (i < lines.length && /^\s*\|/.test(lines[i])) {
+        var c = cells(lines[i++]); t += '<tr>'
+        for (k=0; k<c.length; k++) t += '<td>' + md.inline(c[k].trim(), base) + '</td>'
+        t += '</tr>'
+      }
+      out.push(t + '</table>')
+    } else if (md.item.test(line)) {                                // list (nested by indent)
+      var stack = []
+      while (i < lines.length) {
+        if (!/\S/.test(lines[i]) && md.item.test(lines[i+1] || '')) i++
+        if (!(m = md.item.exec(lines[i]))) break
+        var ind = m[1].length, tag = /\d/.test(m[2]) ? 'ol' : 'ul'
+        if (!stack.length || ind > stack[stack.length-1].ind) { out.push('<' + tag + '>'); stack.push({ ind:ind, tag:tag }) }
+        else {
+          while (stack.length > 1 && ind < stack[stack.length-1].ind) out.push('</li></' + stack.pop().tag + '>')
+          if (stack.length===1 && stack[0].tag!==tag) break           // ul <-> ol: start a new list
+          out.push('</li>')
+        }
+        out.push('<li>' + md.inline(m[3].replace(/^\[ \]\s+/, '\u2610 ').replace(/^\[x\]\s+/i, '\u2611 '), base))
+        i++
+        while (i < lines.length && /^\s{2,}\S/.test(lines[i]) && !md.item.test(lines[i])) out.push(' ' + md.inline(lines[i++].trim(), base))
+      }
+      while (stack.length) out.push('</li></' + stack.pop().tag + '>')
+    } else if (!/\S/.test(line)) {                                  // blank
+      i++
+    } else {                                                        // paragraph
+      var p = [lines[i++]]
+      while (i < lines.length && /\S/.test(lines[i]) && !md.block.test(lines[i])) p.push(lines[i++])
+      out.push('<p>' + md.inline(p.join(' '), base) + '</p>')
+    }
+  }
+  return out.join('\n')
+}
+
+//----------- actions ---------------
+app.types = /\b(name|dir|crumb|view|edit|open|run|code|reveal|folder|cmd|copy|tool|hedit|hadd)\b/
+
+app.act = function (type, path) {
+  if (type==='tool') return app.tool(path)
+  if (type==='hadd') return app.addShortcut()
+  if (type==='hedit') { app.ensureHome(); type = 'edit' }
+  var full = app.path(path), dir = app.parent(full)
+  if (type==='dir') return app.go(full)
+  if (type==='view') return app.view(full)
+  if (type==='edit') {
+    $$.shell.run( app.q(config.editor) + ' ' + app.q(full) )
+  } else if (type==='open') {
+    if (config.browser && /\.html?$/i.test(full)) app.open(full); else $$.shell.execute(full)
+  } else if (type==='run') {
+    var cmd = app.ini.run[app.ext(full)]
+    if (cmd==='start') $$.shell.execute( full, '', dir )
+    else $$.shell.runat( dir, 'cmd.exe /k "' + app.fill(cmd, full, dir) + '"' )
+  } else if (type==='code') {
+    $$.shell.run( app.q(config.code) + ' ' + app.q(full) )
+  } else if (type==='reveal') {
+    $$.shell.run( 'explorer.exe /select,' + app.q(full) )
+  } else if (type==='folder') {
+    $$.shell.run( 'explorer.exe ' + app.q(full) )
+  } else if (type==='cmd') {
+    $$.shell.runat( full, 'cmd.exe' )
+  } else if (type==='copy') {
+    window.clipboardData.setData('Text', full)
+  } else return app.status('Unknown action: ' + type, true)
+  app.status(type + ': ' + full)
+}
+
+// [tools] entry: "/path", "http...", or a command run in the current folder
+app.tool = function (v) {
+  v = app.fill(v, app.cwd, app.cwd)
+  if (/^https?:/i.test(v)) { app.open(v); return app.status('Open: ' + v) }
+  if (v.charAt(0)==='/') {
+    var p = app.path(v)
+    if ($$.file.dirExists(p)) return app.go(p)
+    if ($$.file.exists(p)) return app.act(app.actions(p)[0], p)
+    return app.status('Not found: ' + p, true)
+  }
+  $$.shell.runat( app.cwd, v )
+  app.status('Tool: ' + v)
+}
+
+app.onclick = function (event) {
+  var el = event.target
+  while (el && el.nodeType===1 && el.tagName!=='A' && el.tagName!=='BUTTON' && !/\b(name|dir|crumb)\b/.test(el.className)) el = el.parentNode
+  if (!el || el.nodeType!==1) return
+  var type = '', title = el.title
+  try {
+    if (el.tagName==='A') {
+      if (el.getAttribute('data-href')===null) return
+      event.preventDefault()
+      return app.link(el.getAttribute('data-href'))
+    }
+    var m = app.types.exec(el.className)
+    if (!m) return
+    type = m[1]
+    if (type==='crumb') type = 'dir'
+    if (type==='name') return app.view(title)        // click only shows, never runs
+    app.act(type, title)
+  } catch (err) { app.status(type + ' failed: ' + err.message + '  (' + title + ')', true) }
+}
+
+app.onkey = function (event) {
+  var tag = event.target && event.target.tagName
+  if (event.keyCode===8 && tag!=='INPUT' && tag!=='TEXTAREA') { event.preventDefault(); app.up() }   // Backspace = Up
+}
+
+//----------- new file / folder ---------------
+app.newFile = function () {
+  var name = prompt('New file name (no extension = .md)', app.ymd() + '-')
+  if (!name) return
+  try {
+    name = name.replace(/[\\\/:*?"<>|]+/g, '').trim()
+    if (!/\.[^.]+$/.test(name)) name += '.md'
+    var full = app.path(name)
+    if ($$.file.exists(full)) { app.status('Already exists: ' + full, true); return app.act('edit', full) }
+    var title = name.replace(/\.[^.]+$/, '').replace(/^\d{8}-/, '')
+    $$.file.write(full, /\.md$/i.test(name) ? '# ' + title + '\n\n' : '')
+    app.list(); app.view(full); app.act('edit', full)
+    app.status('Created: ' + full)
+  } catch (err) { app.status('Create failed: ' + err.message, true) }
+}
+
+app.newFolder = function () {
+  var name = prompt('New folder name', '')
+  if (!name) return
+  try {
+    var full = app.path(name.replace(/[\\\/:*?"<>|]+/g, '').trim())
+    if ($$.file.dirExists(full)) return app.status('Already exists: ' + full, true)
+    $$.obj.file.CreateFolder(full)
+    app.list(); app.select(full)
+    app.status('Created: ' + full)
+  } catch (err) { app.status('Create failed: ' + err.message, true) }
+}
+
+app.about = function () {
+  alert(hta.applicationName + '\n\nVersion: ' + hta.version + '\nRoot: ' + app.root + '\nFolder: ' + app.cwd +
+        '\nSettings: ' + app.iniFile + ($$.file.exists(app.iniFile) ? '' : ' (not created, using defaults)') +
+        '\nEditor: ' + config.editor + '\nVS Code: ' + (config.code || '(not found)') +
+        '\n\nUsage: mshta.exe AmoyFolder.hta "C:\\some\\folder"' +
+        '\nMode: IE' + document.documentMode + '\nuserAgent: ' + navigator.userAgent)
+}
+
+//----------- startup ---------------
+// "1024, 75%" -> the smaller of 1024px and 75% of the screen
+app.width = function () {
+  var parts = (app.set('width') || '1024, 75%').split(/\s*,\s*/), w = screen.availWidth
+  for (var i=0; i<parts.length; i++) {
+    var n = parseFloat(parts[i])
+    if (n > 0) w = Math.min(w, /%$/.test(parts[i]) ? screen.availWidth*n/100 : n)
+  }
+  return Math.round(w)
+}
+
+// folder given on the command line: mshta.exe AmoyFolder.hta "C:\some\folder"
+app.arg = function () {
+  var m = /^\s*("[^"]*"|\S+)\s*(.*)$/.exec(String(hta.commandLine || ''))
+  var p = m ? m[2].replace(/"/g, '').trim() : ''
+  return (p && $$.file.exists(p)) ? app.parent(p) : p
+}
+
+window.onload = function () {
+  // folder of this .hta (fallback: current directory)
+  app.self = decodeURIComponent(location.pathname).replace(/^[\/\\]+/, '').replace(/\//g, '\\')
+  if (!/^[a-z]:\\/i.test(app.self)) app.self = $$.CurrentDirectory + '\\AmoyFolder.hta'
+  app.root = app.cwd = app.dir0 = app.parent(app.self)
+  app.iniFile = app.self.replace(/\.hta$/i, '.ini')
+  app.loadIni(); app.detect()
+  app.sortBy = app.set('sort')==='date' ? 'date' : 'name'
+  $$('sort').innerText = 'Sort: ' + app.sortBy
+
+  var root = app.path(app.arg() || app.set('root') || app.root, app.root)
+  if ($$.file.dirExists(root)) app.root = root
+  document.title = 'Amoy Folder - ' + app.root
+
+  // set window position: right side of screen
+  var w = app.width()
+  window.resizeTo( w, screen.availHeight-10 )
+  window.moveTo( screen.availWidth-w, 5 )
+
+  document.addEventListener( 'click', app.onclick, false )
+  document.addEventListener( 'keydown', app.onkey, false )
+  app.go(app.root)
+  if (app.set('start')!=='folder') app.homepage()
+}
+</script>
+
+</html>
