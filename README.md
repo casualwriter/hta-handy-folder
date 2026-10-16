@@ -9,7 +9,7 @@ of shortcuts.
 
 ## Features
 
-- **Two panes**: file list on the left, viewer on the right.
+- **Two panes**: file list on the left, viewer on the right. Drag the bar between them to resize (double-click: back to 40%).
 - **Safe click**: clicking a name only *shows* the file. Nothing runs until you press **► run**.
 - **Built-in viewers**: Markdown (headings, lists, tables, code, quotes, links, images),
   HTML (in a sandboxed frame), images, plain text. Other files show an info table.
@@ -76,6 +76,7 @@ editor    =              ; empty = auto (Notepad++ > VS Code > notepad.exe)
 browser   =              ; empty = default browser
 root      =              ; empty = folder of the .hta
 width     = 1024, 75%    ; px and/or % of screen, the smaller one is used
+split     = 40           ; left panel width in %, saved when you drag the bar
 home      = HandyFolder.md
 start     = home         ; home | folder
 hidden    = ^(\.git|node_modules|__pycache__)$
